@@ -1,8 +1,8 @@
 import unittest
 
 from textnode import TextNode
-from htmlnode import HTMLNode, LeafNode, ParentNode
-from main import text_node_to_html_node
+from htmlnode import LeafNode
+from blocks import text_node_to_html_node
 from textnode import split_nodes_delimiter, extract_markdown_links, extract_markdown_images
 from textnode import split_nodes_link
 from textnode import text_to_nodes

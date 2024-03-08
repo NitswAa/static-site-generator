@@ -53,9 +53,10 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 if i % 2 == 0:
                     # Add regular text
                     if split_nodes_text[i] == '':
-                        raise ValueError(
-                            "Unexpected blank space, consider bold > italic")
-                    split_nodes.append(TextNode(split_nodes_text[i], "text"))
+                        continue
+                    else:
+                        split_nodes.append(
+                            TextNode(split_nodes_text[i], "text"))
                 else:
                     # Add delimited text
                     split_nodes.append(
@@ -124,4 +125,4 @@ def text_to_nodes(text):
     nodes = split_nodes_link(nodes, img=True)
     nodes = split_nodes_link(nodes)
 
-    return nodes
+    return list(filter(lambda node: node.text != '', nodes))

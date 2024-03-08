@@ -1,28 +1,69 @@
-from textnode import TextNode
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from blocks import extract_title, markdown_to_html_node
+import os
+import shutil
 
-def text_node_to_html_node(text_node):
-    match text_node.text_type:
-        case "text":
-            return LeafNode(value=text_node.text)
-        case "bold":
-            return LeafNode(tag="b", value=text_node.text)
-        case "italic":
-            return LeafNode(tag="i", value=text_node.text)
-        case "code":
-            return LeafNode(tag="code", value=text_node.text)
-        case "link":
-            if not text_node.url:
-                raise ValueError("No URL for anchor tag!")
-            return LeafNode(tag="a", value=text_node.text, props={"href":text_node.url})
-        case "img":
-            if not text_node.url:
-                raise ValueError("No image source for img tag!")
-            return LeafNode(tag="img", value=text_node.text, props={"src":text_node.url})
-        case _:
-            raise ValueError("Invalid text type!")
+
+def dir_copy_recurse(from_dir, to_dir):
+    if not os.path.exists(from_dir):
+        raise ValueError("Path does not exist")
+
+    # Base case, file, already copied so don't act
+    if os.path.isfile(from_dir):
+        return
+
+    # Recurse case, directory
+    names = os.listdir(from_dir)
+
+    for name in names:
+        path = os.path.join(from_dir, name)
+        to_path = os.path.join(to_dir, name)
+
+        if os.path.isfile(path):
+            shutil.copy(path, to_dir)
+        else:
+            os.mkdir(to_path)
+            dir_copy_recurse(path, to_path)
+
+
+def generate_page(from_path, template_path, dest_path):
+    title_template = '{{ Title }}'
+    body_template = '{{ Content }}'
+
+    print(f"Generating page with {from_path} using {
+          template_path} to {dest_path}...")
+
+    with open(from_path) as f:
+        markdown = f.readline()
+        title = extract_title(markdown)
+        markdown += f.read()
+
+    with open(template_path) as f:
+        template_html = f.read()
+
+    markdown_html = markdown_to_html_node(markdown).to_html()
+    template_html = template_html.replace(title_template, title)
+    template_html = template_html.replace(body_template, markdown_html)
+
+    with open(dest_path, "w") as f:
+        f.write(template_html)
+
+    print("Generation complete!")
+
 
 if __name__ == "__main__":
-    test_node = TextNode("This is a test!", "normal", "https://www.rev.dev/SSG")
+    which = input("Would you like to [c]opy or [w]rite?")
 
-    print(test_node)
+    if which[0] == 'c':
+
+        from_dir = input("Copy from: ")
+        to_dir = input("Copy to: ")
+
+        print("Copying directory...")
+        dir_copy_recurse(from_dir, to_dir)
+        print("Copy complete!")
+
+    elif which[0] == 'w':
+        page_path = input("Enter markdown file path: ")
+        dest_path = input(
+            "Enter destination file path (include desired filename!): ")
+        generate_page(page_path, 'template.html', dest_path)
