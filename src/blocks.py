@@ -53,7 +53,7 @@ def block_to_block_type(block):
     for line in block.split('\n'):
         if line[0] != '>':
             qu_flag = False
-        if line[0] != '*':
+        if line[0] != '*' and line[0] != '-':
             ul_flag = False
         if len(line) <= 1 or line[:2] != f"{loop_count}.":
             ol_flag = False
